@@ -14,13 +14,16 @@ import (
 func main()  {
 	
 	l := log.New(os.Stdout,"product-api",log.LstdFlags)
-	hh := handlers.NewHello(l)
-	gh := handlers.NewGoodLuck(l)
+
+	// ! product-handler
+	ph := handlers.NewProducts(l)
+	
+
 
 	// ! creating a new servemux ourselves
 	sm := http.NewServeMux()
-	sm.Handle("/",hh)
-	sm.Handle("/goodluck",gh)
+	sm.Handle("/",ph)
+
 
 	// ! creating a server
 	s := &http.Server{
