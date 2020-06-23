@@ -35,7 +35,9 @@ func main()  {
 	}
 
 	go func(){
-
+	
+     l.Println("Starting server on port localhost:8080")
+	
 	 err :=	s.ListenAndServe()
 	 if err != nil{
 		 l.Fatal(err)
