@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/narenarjun/go-micro-learning/handlers"
 )
 
@@ -20,9 +21,20 @@ func main()  {
 	
 
 
-	// ! creating a new servemux ourselves
-	sm := http.NewServeMux()
-	sm.Handle("/",ph)
+	// ! using gorilla mux
+	sm := mux.NewRouter()
+
+	// ! setting up subrouter 
+	getRouter := sm.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc("/",ph.GetProducts)
+
+	// ! router for put request
+	putRouter := sm.Methods(http.MethodPut).Subrouter()
+	putRouter.HandleFunc("/{id:[0-9]+}",ph.UpdateProducts)
+
+	// ! router for post request
+	postRouter := sm.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/",ph.AddProduct)
 
 
 	// ! creating a server
