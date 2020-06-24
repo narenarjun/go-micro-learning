@@ -1,7 +1,21 @@
+// Package classification of Product API
+// 
+// Documentation for Product API
+// 
+// 	Schemes: http
+// 	BasePath: /
+// 	version: 1.0.0
+// 
+// 	Consumes:
+// 	-application/json
+// 
+// 	Produces:
+// 	-application/json
+// 
+// swagger:meta
 package handlers
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,97 +25,47 @@ import (
 	"github.com/narenarjun/go-micro-learning/data"
 )
 // Products struct defines the product
-type Products struct {
-	l *log.Logger
-}
-
-// NewProducts func returns a pointer to Products
-func  NewProducts(l *log.Logger) *Products  {
-	return &Products{l}
-}
-
-
-// GetProducts returns the products from the data store
-func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request)  {
-	p.l.Println("handle GET products")
-	
-	//  fetch the products from the datastore
-	lp := data.GetProducts()
-
-	// seralize thte list to JSON
-	err := lp.ToJSON(rw)
-	if err!= nil {
-		http.Error(rw, "Unable to marshal json",http.StatusInternalServerError)
-		return
-	}
-}
-
-// AddProduct function adds a new product to the data store
-func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request)  {
-	p.l.Println("handle Post products")
-
-	prod := r.Context().Value(KeyProduct{}).(data.Product)
-
-	data.AddProduct(&prod)
-}
-
-// UpdateProducts func updates a products values 
-func (p *Products) UpdateProducts( rw http.ResponseWriter, r *http.Request)  {
-	vars := mux.Vars(r)
-	id,err := strconv.Atoi(vars["id"])
-	p.l.Println("handle PUT products", id)
-	if err != nil {
-		http.Error(rw,"Unable to convert ID",http.StatusBadRequest )
-		return
-	}
-
-	prod := r.Context().Value(KeyProduct{}).(data.Product)
-
-	errdata := data.UpdateProduct(id , &prod)
-	if errdata == data.ErrProductNotFound{
-		http.Error(rw,"Product not found", http.StatusNotFound)
-		return
-	}
-
-	if errdata != nil{
-		http.Error(rw,"Product not found", http.StatusInternalServerError)
-		return
-	}
-}
-// KeyProduct is a key used for the context
+// KeyProduct is a key used for the Product object in the context
 type KeyProduct struct{}
 
-// MiddleWareProductValidation is a middleware function 
-func (p *Products) MiddleWareProductValidation(next http.Handler) http.Handler{
-	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request){
-		prod := data.Product{}
-		err := prod.FromJSON(r.Body)
-		if err != nil {
-			// log.Fatalf("Error is: %v\n",err)
-			p.l.Println("[ERROR] deserializing product",err)
-			http.Error(rw,"Error reading product",http.StatusBadRequest)
-			return
-		}
-
-		// validate the product
-		err = prod.Validate()
-		if err != nil {
-			p.l.Println("[ERROR] validating product ",err)
-			http.Error(
-				rw, 
-				fmt.Sprintf( "Error Validating Product: %s\n",err),
-				http.StatusBadRequest)
-			return
-		}
-
-
-		// add product to the context
-		ctx := context.WithValue(r.Context(),KeyProduct{},prod)
-		req := r.WithContext(ctx)
-
-		// call the next handler, which can be another middleware in the chain, or the final handler
-		next.ServeHTTP(rw, req)
-		} )
-		
+// Products handler for getting and updating products
+type Products struct {
+	l *log.Logger
+	v *data.Validation
 }
 
+// NewProducts returns a new products handler with the given logger
+func NewProducts(l *log.Logger, v *data.Validation) *Products {
+	return &Products{l, v}
+}
+
+// ErrInvalidProductPath is an error message when the product path is not valid
+var ErrInvalidProductPath = fmt.Errorf("Invalid Path, path should be /products/[id]")
+
+// GenericError is a generic error message returned by a server
+type GenericError struct {
+	Message string `json:"message"`
+}
+
+// ValidationError is a collection of validation error messages
+type ValidationError struct {
+	Messages []string `json:"messages"`
+}
+
+// getProductID returns the product ID from the URL
+// Panics if cannot convert the id into an integer
+// this should never happen as the router ensures that
+// this is a valid number
+func getProductID(r *http.Request) int {
+	// parse the product id from the url
+	vars := mux.Vars(r)
+
+	// convert the id into an integer and return
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		// should never happen
+		panic(err)
+	}
+
+	return id
+}
