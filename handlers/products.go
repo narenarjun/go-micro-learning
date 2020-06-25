@@ -1,18 +1,3 @@
-// Package classification of Product API
-// 
-// Documentation for Product API
-// 
-// 	Schemes: http
-// 	BasePath: /
-// 	version: 1.0.0
-// 
-// 	Consumes:
-// 	-application/json
-// 
-// 	Produces:
-// 	-application/json
-// 
-// swagger:meta
 package handlers
 
 import (
@@ -24,8 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/narenarjun/go-micro-learning/data"
 )
-// Products struct defines the product
-// KeyProduct is a key used for the Product object in the context
+//KeyProduct is a key used for the Product object in the context
 type KeyProduct struct{}
 
 // Products handler for getting and updating products
