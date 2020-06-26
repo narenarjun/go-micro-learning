@@ -22,4 +22,6 @@ After running the application:
 go run main.go
 ```
 
+Docs are servered up with [Redoc](https://github.com/Redocly/redoc)
+
 Swagger documentation can be viewed using the ReDoc UI in your browser at [http://localhost:9090/docs](http://localhost:9090/docs).
