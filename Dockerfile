@@ -1,0 +1,34 @@
+# this is docker multistage build
+
+FROM golang:1.14-alpine3.12 AS builder
+
+LABEL stage="builder"
+
+ENV GO111MODULE=on \
+    CGO_ENABLED=1
+
+WORKDIR /productapi
+
+# copying the all the codes
+COPY . .
+
+#  (optional) install any compiler-only dependencies
+RUN apk add --no-cache gcc libc-dev  \
+    &&  go mod download
+
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build . 
+
+
+FROM alpine AS final
+
+WORKDIR /finalapp
+
+# copying from builder the GO executable file
+COPY --from=builder /productapi/go-micro-learning .
+
+# app uses this port , so it is exposed.
+EXPOSE 9090
+
+#  executing the program upon start 
+CMD [ "./go-micro-learning" ]
