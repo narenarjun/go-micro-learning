@@ -33,6 +33,8 @@ Swagger documentation can be viewed using the ReDoc UI in your browser at [http:
 
 The app is containerized and hosted in the [Quay Container registry](quay.io). 
 
+The app is built by multistage built feature to reduce the final image size.
+
 To get the image:
 
 ```

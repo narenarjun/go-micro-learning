@@ -33,6 +33,9 @@ WORKDIR /finalapp
 # copying from builder the GO executable file
 COPY --from=builder /productapi/go-micro-learning .
 
+# app needs swagger.yaml to serve the docs properly on the /docs route
+COPY --from=builder /productapi/swagger.yaml .
+
 # app uses this port , so it is exposed.
 EXPOSE 9090
 
