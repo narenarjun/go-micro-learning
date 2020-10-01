@@ -4,6 +4,8 @@ FROM golang:1.14-alpine3.12 AS builder
 
 LABEL stage="builder"
 
+LABEL maintainer="narendran <narendev0610@gmail.com>"
+
 ENV GO111MODULE=on \
     CGO_ENABLED=1
 
@@ -21,6 +23,10 @@ RUN CGO_ENABLED=0 GOOS=linux go build .
 
 
 FROM alpine AS final
+
+LABEL stage="final"
+
+LABEL maintainer="narendran <narendev0610@gmail.com>"
 
 WORKDIR /finalapp
 
